@@ -81,7 +81,7 @@ wp_timer = gears.timer {
 -- }}}
 
 -- This is used later as the default terminal and editor to run.
-terminal = "urxvt"
+terminal = "x-terminal-emulator"
 editor = os.getenv("EDITOR") or "nano"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -90,8 +90,8 @@ editor_cmd = terminal .. " -e " .. editor
 -- If you do not like this or do not have such a key,
 -- I suggest you to remap Mod4 to another key using xmodmap or other tools.
 -- However, you can use another modifier like Mod1, but it may interact with others.
-local modkey = "Mod4"
-local altkey = "Mod1"
+modkey = "Mod4"
+-- local altkey = "Mod1"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
@@ -139,7 +139,7 @@ myawesomemenu = {
    { "quit", function() awesome.quit() end}
 }
 myshutdownmenu = {
-   { "hibernate", "sudo /usr/sbin/hibernate" },
+   { "hibernate", "sudo /usr/sbin/pm-hibernate" },
    { "halt", "sudo /sbin/shutdown -h now" },
    { "reboot", "sudo /sbin/shutdown -r now" },
    { "logout", awesome.quit }
@@ -212,7 +212,7 @@ cpufreq:buttons(awful.util.table.join(
 vicious.cache(vicious.widgets.cpufreq)
 -- initialize temperature text
 local cputemp = wibox.widget.textbox()
-vicious.register(cputemp, vicious.widgets.thermal, "<span color='#e00000'>$1&#176;C</span>", 5, { "coretemp.0/hwmon/hwmon1", "core" })
+vicious.register(cputemp, vicious.widgets.thermal, "<span color='#e00000'>$1&#176;C</span>", 5, { "coretemp.0/hwmon/hwmon3", "core" })
 vicious.cache(vicious.widgets.thermal)
 -- }}} CPU widget
 
@@ -274,7 +274,7 @@ function process_battext(widget, args)
     --end
     return "<span color='#e00000'>" .. args[1] .. args[2] .. "%</span>"
 end
-vicious.register(battext, vicious.widgets.bat, process_battext, 10, "BAT1")
+vicious.register(battext, vicious.widgets.bat, process_battext, 10, "BAT0")
 vicious.cache(vicious.widgets.bat)
 -- }}} Battery widget
 
@@ -486,43 +486,47 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end,
               {description = "focus the previous screen", group = "screen"}),
 
-    awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
-              {description = "jump to urgent client", group = "client"}),
-    awful.key({ modkey,           }, "Tab",
-        function ()
-            awful.client.focus.history.previous()
-            if client.focus then
-                client.focus:raise()
-            end
-        end,
-        {description = "go back", group = "client"}),
+    -- awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
+    --           {description = "jump to urgent client", group = "client"}),
+    -- awful.key({ modkey,           }, "Tab",
+    --     function ()
+    --         awful.client.focus.history.previous()
+    --         if client.focus then
+    --             client.focus:raise()
+    --         end
+    --     end,
+    --     {description = "go back", group = "client"}),
+
+    awful.key({ modkey,           }, "Tab",  function () awful.screen.focus_relative( 1) end),
 
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
         {description = "open a terminal", group = "launcher"}),
-    awful.key({ altkey, "Control", "Shift" }, "Return", function () awful.spawn(terminal) end,
-        {description = "open a terminal (other binding)", group = "launcher"}),
 
     awful.key({ modkey, "Control" }, "r", awesome.restart,
         {description = "reload awesome", group = "awesome"}),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit,
         {description = "quit awesome", group = "awesome"}),
 
-    awful.key({ modkey,           }, "w", function () awful.spawn("google-chrome-stable") end,
+    -- awful.key({ modkey,           }, "w", function () awful.spawn("google-chrome-stable") end,
+    --     {description = "launch web browser", group = "launcher"}),
+    awful.key({ modkey,           }, "w", function () awful.spawn("firefox") end,
         {description = "launch web browser", group = "launcher"}),
     awful.key({ modkey,           }, "f", function () awful.spawn("pcmanfm") end,
         {description = "launch file manager", group = "launcher"}),
-    awful.key({ modkey,           }, "e", function () awful.spawn(editor) end,
+    awful.key({ modkey,           }, "e", function () awful.spawn("emacsclient -nc --alternate-editor emacs ~/promotion") end,
         {description = "launch editor (emacs)", group = "launcher"}),
+    awful.key({ modkey,           }, "t", function () awful.spawn("thunderbird") end,
+        {description = "launch email client (thunderbird)", group = "launcher"}),
     awful.key({ modkey,           }, "\\", function () awful.spawn("mate-terminal") end,
         {description = "launch other terminal (mate-terminal)", group = "launcher"}),
-    awful.key({ modkey, "Shift"   }, "a", function () awful.spawn("autorandr -c") end,
+    awful.key({ modkey,           }, "o", function () awful.spawn("autorandr --change") end,
         {description = "launch autorandr", group = "launcher"}),
     awful.key({ modkey, "Shift"   }, "k", function () awful.spawn("xkill") end,
         {description = "launch xkill", group = "launcher"}),
 
     -- Screensaver Super-l or Pause
-    awful.key({ modkey },            "z",      function () awful.util.spawn("xautolock -locknow") end),
+    awful.key({ modkey },            "l",      function () awful.util.spawn("xtrlock") end),
     awful.key({ },                   "Pause",  function () awful.util.spawn("xautolock -locknow") end),
 
     -- Launcher: Suspend
@@ -540,8 +544,8 @@ globalkeys = awful.util.table.join(
     -- Launcher: Hibernate
     awful.key({ modkey },            "h",
               function ()
-                  awful.spawn("xautolock -locknow")
-                  awful.spawn("systemctl hibernate")
+                  awful.spawn("xtrlock")
+                  awful.spawn("sudo /usr/sbin/pm-hibernate")
     end),
 
     -- Disable Screensaver
@@ -586,22 +590,22 @@ globalkeys = awful.util.table.join(
     awful.key({ }, "XF86WLAN",                function () awful.spawn("sudo /root/samctl.sh wlan") end),
 
     -- Layout manipulation
-    awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)          end,
-        {description = "increase master width factor", group = "layout"}),
-    awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)          end,
-        {description = "decrease master width factor", group = "layout"}),
-    awful.key({ modkey            }, "-",     function () awful.tag.incnmaster( 1, nil, true) end,
-        {description = "increase the number of master clients", group = "layout"}),
-    awful.key({ modkey            }, "=",     function () awful.tag.incnmaster(-1, nil, true) end,
-        {description = "decrease the number of master clients", group = "layout"}),
-    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
-        {description = "increase the number of columns", group = "layout"}),
-    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
-        {description = "decrease the number of columns", group = "layout"}),
-    awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
-        {description = "select next", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
-        {description = "select previous", group = "layout"}),
+    -- awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)          end,
+    --     {description = "increase master width factor", group = "layout"}),
+    -- awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)          end,
+    --     {description = "decrease master width factor", group = "layout"}),
+    -- awful.key({ modkey            }, "-",     function () awful.tag.incnmaster( 1, nil, true) end,
+    --     {description = "increase the number of master clients", group = "layout"}),
+    -- awful.key({ modkey            }, "=",     function () awful.tag.incnmaster(-1, nil, true) end,
+    --     {description = "decrease the number of master clients", group = "layout"}),
+    -- awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
+    --     {description = "increase the number of columns", group = "layout"}),
+    -- awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
+    --     {description = "decrease the number of columns", group = "layout"}),
+    -- awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
+    --     {description = "select next", group = "layout"}),
+    -- awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
+    --     {description = "select previous", group = "layout"}),
 
     awful.key({ modkey, "Control" }, "n",
               function ()
@@ -634,12 +638,7 @@ globalkeys = awful.util.table.join(
 )
 
 clientkeys = awful.util.table.join(
-    awful.key({ modkey,           }, "`",
-        function (c)
-            c.fullscreen = not c.fullscreen
-            c:raise()
-        end,
-        {description = "toggle fullscreen", group = "client"}),
+    awful.key({ modkey,           }, "`",      function (c) c.fullscreen = not c.fullscreen  end),
     awful.key({ modkey,           }, "q",      function (c) c:kill()                         end),
     awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
               {description = "close", group = "client"}),
@@ -649,8 +648,8 @@ clientkeys = awful.util.table.join(
               {description = "move to master", group = "client"}),
     awful.key({ modkey,           }, "a",      function (c) c:move_to_screen()               end,
               {description = "move to screen", group = "client"}),
-    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
-              {description = "toggle keep on top", group = "client"}),
+    -- awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
+    --           {description = "toggle keep on top", group = "client"}),
     awful.key({ modkey,           }, "n",
         function (c)
             -- The client currently has the input focus, so it cannot be
@@ -860,3 +859,6 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
+
+-- Start network manager applet
+-- os.execute("nm-applet &")
