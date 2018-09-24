@@ -9,7 +9,7 @@ themedir            = config .. "/theme/"
 
 theme.font          = "Terminus 9"
 
-theme.bg_normal     = "#00000000"
+theme.bg_normal     = "#000000ff"
 theme.bg_focus      = "#31040480"
 theme.bg_urgent     = "#ff0000"
 theme.bg_minimize   = "#44444480"
